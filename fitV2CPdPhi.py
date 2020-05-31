@@ -22,7 +22,7 @@ import readGravity as rg
 
 start = time.clock()
 
-dir = '/Users/jacques/Work/Abi/data/'
+dir = './data/'
 file = 'GRAVI.2016-06-18*_singlescivis_singlesciviscalibrated.fits'
 
 method ='BFGS' # 'BFGS' # 'Nelson-Mead' 'Powell'
