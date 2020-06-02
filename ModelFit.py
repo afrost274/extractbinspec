@@ -379,12 +379,12 @@ def plotFluxRatios(data, params, time=[], dirdat='.', name='OUTPUT'):
     fig, ax = plt.subplots()
 
     plt.plot(wave*1e6, fr)
-    plt.text(2.1, 1.05, 'time={:05d}'.format(time) )
+    plt.text(2.1, 1.05, 'time={:05f}'.format(time) )
     plt.text(2.2, 1.0, '$\Delta x$={:04.2f}mas \t $\Delta y$={:04.2f}mas'.format(params[0], params[1]) )
     ax.set_ylim((0, 1.2))
     plt.savefig(dirdat + name +'_fratios.pdf')
-    plt.show()
-    plt.close()
+    #plt.show()
+    #plt.close()
 
 
 def ListV2 (data):
@@ -760,4 +760,4 @@ def giveDataModelChi2(data, model, dirdat='.', name='OUTPUT'):
     plt.savefig(dirdat + name+ '_ImageVsData.pdf')
 
     plt.show()
-    plt.close()
+    #plt.close()

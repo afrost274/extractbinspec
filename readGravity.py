@@ -8,10 +8,10 @@ import fnmatch
 import math
 import gc
 import scipy
-from pysynphot import observation
-from pysynphot import spectrum
+from synphot import observation #pysynphot
+from synphot import spectrum
 from scipy.optimize import curve_fit
-from PyAstronomy import pyasl
+#from PyAstronomy import pyasl
 
 
 def shiftSpec(x, shift):
@@ -27,7 +27,7 @@ def shiftSpec(x, shift):
 def shiftScience2Template(fluxSCI, fluxCAL, fluxTEMP, waveSCI, waveTEMP):
 
     popt, pcov = curve_fit(shiftSpec, (fluxCAL, waveSCI, waveTEMP), fluxTEMP, p0=[60], bounds=(-500, 500), sigma = 1/(waveSCI>2.28e-6)+1e-16)
-    print 'Need to shift by {}km/s'.format(popt[0])
+    print ('Need to shift by {}km/s'.format(popt[0]))
     fluxCAL, wave = pyasl.dopplerShift(waveSCI, fluxCAL, popt[0], edgeHandling="firstlast")
     fluxSCI, wave = pyasl.dopplerShift(waveSCI, fluxSCI, popt[0], edgeHandling="firstlast")
 

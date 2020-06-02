@@ -23,16 +23,17 @@ import readGravity as rg
 start = time.clock()
 
 dir = './data/'
-file = 'GRAVI.2016-06-18*_singlescivis_singlesciviscalibrated.fits'
+#file = 'GRAVI.2016-06-18*_singlescivis_singlesciviscalibrated.fits'
+file = 'SCI_TYC6265-1977-1_GRAVITY_UT1UT2UT3UT4_MEDIUM-COMBINED_SINGLE_SCI_VIS_CALIBRATED.fits'
 
-method ='BFGS' # 'BFGS' # 'Nelson-Mead' 'Powell'
+method ='SLSQP'#''BFGS' # 'BFGS' # 'Nelson-Mead' 'Powell'
 
 # First guess from ASPRO2
 # x, y, fratio
-x = -3.3
-y = -1.48
+x = 0.49 #-3.3
+y = 1.13    #-1.48
 fr = 0.5
-nwave = 1700
+nwave = 210 #1700
 
 firstguess = MF.GenParamVector(x, y, fr, nwave)
 #boundsmin, boundsmax = MF.BoundsDef(nwave)
@@ -59,6 +60,7 @@ ymodel = MF.GenerateData(data, fitparams)
 
 end = time.clock()
 thetime = end - start
+print(thetime)
 
 MF.plotFluxRatios(data, fitparams, time=thetime, name=method, dirdat=dir)
 MF.giveDataModelChi2(data, ymodel, name=method, dirdat=dir)
