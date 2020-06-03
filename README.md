@@ -10,7 +10,7 @@ pip install synphot
 
 We then need to be in the ```ExtractBinSpec/``` folder.
 
-You can then deactivate the environment width
+You can then deactivate the environment with
 ```
 conda deactivate
 ```
