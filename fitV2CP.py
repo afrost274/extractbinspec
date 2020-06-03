@@ -21,10 +21,10 @@ import readGravity as rg
 
 
 
-start = time.clock()
+start = time.perf_counter()
 
 #dir = './data/'
-dir = '/Users/emmab/Data/'
+dir = './data/'
 #file = 'GRAVI.2016-06-18*_singlescivis_singlesciviscalibrated.fits'
 file = 'SCI_TYC6265-1977-1_GRAVITY_UT1UT2UT3UT4_MEDIUM-COMBINED_SINGLE_SCI_VIS_CALIBRATED.fits'
 
@@ -62,7 +62,7 @@ fitparams = res.x
 ymodel = MF.GenerateData(data, fitparams)
 chivalue = MF.ModelChi2Bin(fitparams, data)
 
-end = time.clock()
+end = time.perf_counter()
 thetime = end - start
 print(thetime)
 
