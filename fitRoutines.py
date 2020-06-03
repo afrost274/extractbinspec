@@ -406,7 +406,7 @@ class ModulatedGaussianRing(UD):
            sig = self._width*self._diameter/2/(2*sqrt(2*log(2)))
            tempimg = 1./(sig*sqrt(2*pi))*exp(-(sqrt(rotx**2+roty**2)-self._diameter/2)**2/(2*sig**2)) \
                      *(1+self._c1*cos(modAngle)+self._s1*sin(modAngle)+self._c2*cos(2*modAngle)+self._s2*sin(2*modAngle)+self._c3*cos(3*modAngle)+self._s3*sin(3*modAngle))
-           print tempimg.sum(),fluxratio
+           print (tempimg.sum(),fluxratio)
            img += fluxratio*tempimg/tempimg.sum()
 
            return img
@@ -606,7 +606,7 @@ class ModulatedGaussianRingShift(UD):
            sig = self._width*self._diameter/2/(2*sqrt(2*log(2)))
            tempimg = 1./(sig*sqrt(2*pi))*exp(-(sqrt(rotx**2+roty**2)-self._diameter/2)**2/(2*sig**2)) \
                      *(1+self._c1*cos(modAngle)+self._s1*sin(modAngle)+self._c2*cos(2*modAngle)+self._s2*sin(2*modAngle)+self._c3*cos(3*modAngle)+self._s3*sin(3*modAngle))
-           print tempimg.sum(),fluxratio
+           print (tempimg.sum(),fluxratio)
            img += fluxratio*tempimg/tempimg.sum()
 
            return img
@@ -1202,7 +1202,8 @@ class ParameterList(object):
            y            - the data to be fitted
            x            - the domain(/dependent variable) of the data to be fitted
            """
-           if(y.shape[0] > self._len): raise IndexError, "Number of datasets to be fitted larger than number of objects in the objectlist!"
+           if(y.shape[0] > self._len):
+               raise IndexError ('Number of datasets to be fitted larger than number of objects in the objectlist!')
            if x != None and x.shape == y.shape:
              for i in range(self._len):
                fitLS(self._objectlist[i],y[i,:],x[i,:])
@@ -1225,7 +1226,7 @@ class ParameterList(object):
                         OR one array containing the dependent variable of each array in the y-list
 
            """
-           if(len(y) > self._len): raise IndexError, "Number of datasets to be fitted larger than number of objects in the objectlist!"
+           if(len(y) > self._len): raise IndexError ("Number of datasets to be fitted larger than number of objects in the objectlist!")
            if x != None and len(x) == len(y):
              for i in range(self._len):
                fitCS(self._objectlist[i],y[i],yerr[i],x[i],display=0)
@@ -1248,7 +1249,7 @@ class ParameterList(object):
              for i in range(self._len):
                evaluation[:,i] = self._objectlist[i].evaluate(x[:,i])
            else:
-              raise IndexError, 'Dimension of domain x is not valid: too many or too few columns!'
+              raise IndexError ('Dimension of domain x is not valid: too many or too few columns!')
            return evaluation
 
      def evaluateObjects2(self,x):
@@ -1263,7 +1264,7 @@ class ParameterList(object):
              for i in range(self._len):
                evaluation[i] = self._objectlist[i].evaluate(x)[0]
            else:
-              raise IndexError, 'Dimension of x does not equal the number of objects in the list! Use other evaluation method!'
+              raise IndexError ('Dimension of x does not equal the number of objects in the list! Use other evaluation method!')
            return evaluation
 
      def __len__(self):
@@ -1441,7 +1442,7 @@ def fitCS(parameterObject, y, yerr, x = None, display = 1):
     indices = parameterObject.getFreeIndices()
     fitPars = allParNames[indices]
     if N <= len(fitPars):
-        print 'Number of data points too small!'
+        print ('Number of data points too small!')
         norm = 1.
     else:
         norm = 1./(N-len(fitPars))
@@ -1520,7 +1521,7 @@ def montecarlo(parameterListObject, y, yerr, x):
     parameterListObject.fitCSObjects(newy,newyerr,x)
     allValues = array(parameterListObject())
     parameterValueErrors = allValues.std(axis=0)
-    print allValues.mean(axis=0),median(allValues,axis=0),allValues.std(axis=0)
+    print (allValues.mean(axis=0),median(allValues,axis=0),allValues.std(axis=0))
     #pl.hist(allValues)
     #pl.xlim((0.0,1.2))
     #pl.show()
@@ -1555,14 +1556,14 @@ def phasediagram(times, signal, nu0, D = 0.0, errsignal=None, t0=None, return_in
     # the following code checks whether the input is correct: the code is triple-checked and proven to be correct!
     if (times.ndim == signal.ndim):
       if (times.shape != signal.shape):
-        raise IndexError, 'Shape mismatch between "times" and "signal".'
+        raise IndexError ('Shape mismatch between "times" and "signal".')
     else:
       if (times.shape[0] != signal.shape[0]):
-        raise IndexError, 'Shape mismatch between "times" and "signal" along axis 0.'
+        raise IndexError ('Shape mismatch between "times" and "signal" along axis 0.')
       times = multiply.outer(times,ones(signal.shape[1]))
     try:
       if (times.shape != errsignal.shape):
-        raise IndexError, 'Shape mismatch between "signal" and "errsignal".'
+        raise IndexError ('Shape mismatch between "signal" and "errsignal".')
     except AttributeError:
       pass
 
@@ -1595,7 +1596,7 @@ def phase(times, maxima):
     M = len(maxima)
 
     if maxima[-1] < times.max():
-            raise ValueError, 'Latest maximum should be larger than times of interest.'
+            raise ValueError ('Latest maximum should be larger than times of interest.')
 
     newtimes = outer(ones(M),times)
     newmaxima = outer(maxima,ones(N))

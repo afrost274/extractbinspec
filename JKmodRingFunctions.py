@@ -1,11 +1,11 @@
 import pylab as pl
 import numpy as np
-import fileIO
+#import fileIO
 import fitRoutines
-from Planck import BB_m
-import triangle
-import emcee
-import oifits
+#from Planck import BB_m
+#import triangle
+#import emcee
+#import oifits
 import csv
 # from astropy.convolution import Gaussian1DKernel
 # from astropy.convolution import Box1DKernel
@@ -21,7 +21,7 @@ import fnmatch
 import math
 import gc
 import scipy
-from astroquery.simbad import Simbad
+#from astroquery.simbad import Simbad
 from shutil import copyfile
 from scipy import ndimage
 import scipy
@@ -32,7 +32,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # rc('font',**{'family':'serif','serif':['Palatino']})
 # rc('text', usetex=True)
 import matplotlib.cm as cm
-import dirtybeam as db
+#import dirtybeam as db
 
 names = {}
 names['ACHer'] = 'IRAS18281+2149'

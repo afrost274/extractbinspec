@@ -376,18 +376,32 @@ def plotFluxRatios(data, params, time=[], dirdat='.', name='OUTPUT'):
     fr = params[2:]
     u, v, wavev2, wavecp = DataUnpack(data)
     wave = CreateWaveGrid(wavev2, len(fr))
-    fig, ax = plt.subplots()
+    #fig, ax = plt.subplots()
+    plt.subplot(211)
+    plt.plot(data['fluxwave']*1e6,data['flux'])
+    plt.ylabel('Flux')
+    plt.xlabel('Wavelength ($\mu m$)')
+    plt.title('Total Flux')
 
+
+    plt.subplot(212)
     plt.plot(wave*1e6, fr)
-    plt.text(2.1, 1.05, 'time={:05d}'.format(time) )
-    plt.text(2.2, 1.0, '$\Delta x$={:04.2f}mas \t $\Delta y$={:04.2f}mas'.format(params[0], params[1]) )
-    ax.set_ylim((0, 1.2))
-    plt.savefig(dirdat + name +'_fratios.pdf')
+    plt.text(2.35, 1.15, 'time={} s'.format(round(time,2)) )
+    plt.text(2.35, 1.05, '$\Delta x$={}mas'.format(round(params[0],2)))
+    plt.text(2.35, 1.00, '$\Delta y$={} mas'.format(round(params[1],2)))
+    plt.ylim((0, 1.3))
+    #plt.savefig(dirdat + name +'_fratios.pdf')
+    plt.ylabel('Flux')
+    plt.xlabel('Wavelength ($\mu m$)')
+    plt.title('Flux ratio')
+
+    plt.tight_layout()
     plt.show()
-    plt.close()
 
 
 def ListV2 (data):
+
+    data = copy.deepcopy(data)
 
     u, v, wavev2, wavecp = DataUnpack(data)
     V2, V2err, CP, CPerr = GiveDataValues(data)
@@ -504,6 +518,8 @@ def CutVis(Vis, Phi, u, v, wave):
 
 def ListVis(data):
 
+    data = copy.deepcopy(data)
+
     u, v, wave = DataUnpackVis(data)
     Vis, Viserr, Phi, Phierr = GiveDataValuesVis(data)
 
@@ -575,6 +591,8 @@ def ListVis(data):
 
 
 def ListCP (data):
+
+    data = copy.deepcopy(data)
 
     u, v, wavev2, wavecp = DataUnpack(data)
     V2, V2err, CP, CPerr = GiveDataValues(data)
@@ -666,16 +684,68 @@ def ListCP (data):
 
     return newCP, newCPerr, newu1, newv1, newu2, newv2, newu3, newv3, newwave
 
+def GiveChi2Values(data,model):
+    V2data,V2err,CPdata,CPerr= GiveDataValues(data)
+    V2mod, tmp1, CPmod, tmp2= GiveDataValues(model)
 
+    resV2 = (V2data - V2mod)**2 / V2err**2
+    resCP = (CPdata - CPmod)**2 / CPerr**2
+
+    totalChi2 = np.sum(resV2) + np.sum(resCP)
+    redChi2 = (np.sum(resV2) + np.sum(resCP)) / (len(V2err) + len(CPerr))
+    redChi2V2 = np.sum(resV2) / len(V2err)
+    redChi2CP = np.sum(resCP) / len(CPerr)
+
+    return totalChi2, redChi2, redChi2V2, redChi2CP
+
+def PrintFitDetails(fitparams, data, model, method, thetime):
+
+    chivalue = ModelChi2Bin(fitparams, data)
+    xsec, ysec, fratios, primD, secD = ParamUnpack(fitparams)
+
+    V2data,V2err,CPdata,CPerr = GiveDataValues(data)
+    V2mod, tmp1, CPmod, tmp2 = GiveDataValues(model)
+
+    wave = data['wave']
+    #V2data, V2err = data['v2']
+    #CPdata, CPerr = data['cp']
+    #V2mod, tmp1 = model['v2']
+    #CPmod, tmp2 = model['cp']
+
+    #compute chi2
+    totalChi2, redChi2, redChi2V2, redChi2CP = GiveChi2Values(data,model)
+
+    moy_fratios=np.nanmean(fratios)
+    std_fratios=np.nanstd(fratios)
+
+    print ('\033[95mResults of minimisation fit using the '+str(method)+' method:\033[0m')
+    print ('\033[4mCompanion star position\033[0m')
+    print ('x: '+str(xsec)+'')
+    print ('y: '+str(ysec)+'')
+    print ('\033[4mFlux ratio grid\033[0m')
+    print (fratios)
+    print ('Flux ratio (average): ', moy_fratios)
+    print ('Flux ratio (std): ', std_fratios)
+    print ('\033[4mChi-Squares\033[0m')
+    print ('Chi-square (not reduced): '+str(totalChi2)+'')
+    print ('Reduced (total) Chi-Square: '+str(redChi2)+'')
+    print ('Reduced V2 Chi-Square: '+str(redChi2V2)+'')
+    print ('Reduced CP Chi-Square: '+str(redChi2CP)+'')
+    print ('\033[4mRunning time\033[0m')
+    print ('Time to run = '+str(thetime)+'s')
 
 def giveDataModelChi2(data, model, dirdat='.', name='OUTPUT'):
 
     # Loading the dataset
     wave = data['wave']
-    V2data, V2err = data['v2']
-    CPdata, CPerr = data['cp']
-    V2mod, tmp1 = model['v2']
-    CPmod, tmp2 = model['cp']
+    V2data,V2err,CPdata,CPerr = GiveDataValues(data)
+    V2mod, tmp1, CPmod, tmp2 = GiveDataValues(model)
+
+    #V2data, V2err = data['v2']
+    #CPdata, CPerr = data['cp']
+    #V2mod, tmp1 = model['v2']
+    #CPmod, tmp2 = model['cp']
+
     #for i in np.arange(len(V2data)):
     #    print(V2err[i] - tmp1[i])
 
@@ -686,14 +756,15 @@ def giveDataModelChi2(data, model, dirdat='.', name='OUTPUT'):
     base, Bmax = mrf.Bases(data)
 
     # compute chi2
-    chi2V2 = (V2data - V2mod)**2 / V2err**2
-    chi2CP = (CPdata - CPmod)**2 / CPerr**2
+    #chi2V2 = (V2data - V2mod)**2 / V2err**2
+    #chi2CP = (CPdata - CPmod)**2 / CPerr**2
 
-    chi2 = (np.sum(chi2V2) + np.sum(chi2CP)) / (len(V2err) + len(CPerr))
+    #chi2 = (np.sum(chi2V2) + np.sum(chi2CP)) / (len(V2err) + len(CPerr))
 
-    chi2V2 = np.sum(chi2V2) / len(V2err)
-    chi2CP = np.sum(chi2CP) / len(CPerr)
+    #chi2V2 = np.sum(chi2V2) / len(V2err)
+    #chi2CP = np.sum(chi2CP) / len(CPerr)
 
+    totalChi2, chi2, chi2V2, chi2CP = GiveChi2Values(data,model)
     print (chi2, chi2V2, chi2CP)
 
     # Computing the Residuals
@@ -757,7 +828,107 @@ def giveDataModelChi2(data, model, dirdat='.', name='OUTPUT'):
     # legend.get_frame().set_facecolor('#00FFCC')
 
     # fig.tight_layout()
-    plt.savefig(dirdat + name+ '_ImageVsData.pdf')
+    #plt.savefig(dirdat + name+ '_ImageVsData.pdf')
 
-    plt.show()
-    plt.close()
+    #plt.show()
+    #plt.close()
+
+def plotCPtriangle(data,model):
+
+    newCP, newCPerr, newu1, newv1, newu2, newv2, newu3, newv3, newwave = ListCP(data)
+    newwavemicron = [[float(j)/1e-6 for j in i] for i in newwave]
+
+    newCPmod, newCPerrmod, newu1mod, newv1mod, newu2mod, newv2mod, newu3mod, newv3mod, newwavemod = ListCP(model)
+    newwavemicronmod = [[float(j)/1e-6 for j in i] for i in newwavemod]
+
+    ntri = len(newCP)
+    totalChi2, redChi2, redChi2V2, redChi2CP = GiveChi2Values(data,model)
+
+    fig = plt.figure()
+    # fig.subplots_adjust(hspace=0.4, wspace=0.4)
+    for i in np.arange(ntri):
+        plt.tight_layout()
+        ax = fig.add_subplot(2, 4, i+1)
+        ax.plot(newwavemicron[i], newCP[i], '-', color='mediumorchid')
+        ax.plot(newwavemicronmod[i], newCPmod[i], '-', color='gold')
+        ax.set_ylim(-10,10)
+        ax.set_ylabel('CP')
+        ax.set_xlabel('$\lambda$($\mu$m)')
+
+    plt.suptitle('CP with '+r'$\chi^2_{CP,red}$='+str(round(redChi2CP,2))+'')
+    fig.tight_layout(pad=2.0, w_pad=0.02, h_pad=0.5)
+        #plt.show()
+
+def plotV2baseline(data,model):
+
+    newV2, newV2err, newu, newv, newwave = ListV2(data)
+    newwavemicron = [[float(j)/1e-6 for j in i] for i in newwave]
+
+    newV2mod, newV2errmod, newumod, newvmod, newwavemod = ListV2(model)
+    newwavemicronmod = [[float(j)/1e-6 for j in i] for i in newwavemod]
+    nbase = len(newV2)
+    totalChi2, redChi2, redChi2V2, redChi2CP = GiveChi2Values(data,model)
+
+    #redchi2, redchi2V2, redchi2CP=MF.PrintFitDetails(fitparams, data, ymodel, method, thetime)
+    #redchi2, redchi2V2, redchi2CP=round(redchi2,2),round(redchi2V2,2),round(redchi2CP,2)
+
+    fig = plt.figure()
+    # fig.subplots_adjust(hspace=0.4, wspace=0.4)
+    for i in np.arange(nbase):
+        plt.tight_layout()
+        ax = fig.add_subplot(3, 4, i+1)
+        ax.plot(newwavemicron[i], newV2[i], '-', color='mediumaquamarine')
+        ax.plot(newwavemicronmod[i], newV2mod[i], '-', color='tomato')
+        ax.set_ylim(0,1.2)
+        ax.set_ylabel('V2')
+        ax.set_xlabel('$\lambda$($\mu$m)')
+
+    fig.tight_layout(pad=2.0, w_pad=0.02, h_pad=0.5)
+    plt.suptitle('V2 with '+r'$\chi^2_{V2,red}$='+str(round(redChi2V2,2))+'')
+
+def plotCPandV2(data,model):
+    newV2, newV2err, newu, newv, newwaveV2 = ListV2(data)
+    newwavemicronV2 = [[float(j)/1e-6 for j in i] for i in newwaveV2]
+
+    newV2mod, newV2errmod, newumod, newvmod, newwavemodV2 = ListV2(model)
+    newwavemicronmodV2 = [[float(j)/1e-6 for j in i] for i in newwavemodV2]
+
+    newCP, newCPerr, newu1, newv1, newu2, newv2, newu3, newv3, newwaveCP = ListCP(data)
+    newwavemicronCP = [[float(j)/1e-6 for j in i] for i in newwaveCP]
+
+    newCPmod, newCPerrmod, newu1mod, newv1mod, newu2mod, newv2mod, newu3mod, newv3mod, newwavemodCP = ListCP(model)
+    newwavemicronmodCP = [[float(j)/1e-6 for j in i] for i in newwavemodCP]
+
+    totalChi2, redChi2, redChi2V2, redChi2CP = GiveChi2Values(data,model)
+
+    fig, (ax11, ax21) = plt.subplots(nrows=1, ncols=2)
+
+    d=0
+    for i in np.arange(len(newV2)):
+        V2=[newV2[i][n]+d for n in range(len(newV2[i]))]
+        V2mod=[newV2mod[i][n]+d for n in range(len(newV2mod[i]))]
+        #newwaveV2=[newwaveV2[i][n]*1e6 for n in range(len(newwaveV2))]
+
+        ax11.plot(newwavemicronV2[i], V2, '-',color='mediumaquamarine')
+        ax11.plot(newwavemicronmodV2[i],V2mod, '-',color='tomato')
+
+        ax11.legend(['Data','Model'],loc='upper right')
+        d+=1
+
+    f=0
+    for i in np.arange(len(newCP)):
+        CP=[newCP[i][n]+f for n in range(len(newCP[i]))]
+        CPmod=[newCPmod[i][n]+f for n in range(len(newCPmod[i]))]
+        #newwaveCP=[newwaveCP[i][n]*1e6 for n in range(len(newwaveCP))]
+
+        ax21.plot(newwavemicronCP[i], CP, '-',color='mediumorchid')
+        ax21.plot(newwavemicronmodCP[i],CPmod, '-',color='gold')
+
+        ax21.legend(['Data','Model'],loc='upper right')
+        f+=20
+
+    ax11.set_xlabel('Wavelength ($\mu m$)')
+    ax11.set_ylabel('V2')
+    ax21.set_xlabel('Wavelength ($\mu m$)')
+    ax21.set_ylabel('CP')
+    fig.suptitle('V2 and CP (model+data) as a function of wavelengths with '+r'$\chi^2_{tot,red}$='+str(round(redChi2,2))+'')
