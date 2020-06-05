@@ -20,7 +20,7 @@ import readGravity as rg
 
 
 
-start = time.clock()
+start = time.perf_counter()
 
 dir = './data/'
 file = 'GRAVI.2016-06-18*_singlescivis_singlesciviscalibrated.fits'
@@ -57,8 +57,9 @@ print(fitparams)
 
 ymodel = MF.GenerateData(data, fitparams)
 
-end = time.clock()
+end = time.perf_counter()
 thetime = end - start
+print(thetime)
 
 MF.plotFluxRatios(data, fitparams, time=thetime, name=method, dirdat=dir)
 MF.giveDataModelChi2(data, ymodel, name=method, dirdat=dir)
